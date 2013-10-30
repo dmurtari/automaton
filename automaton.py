@@ -46,10 +46,10 @@ class Automaton(Thread):
             if self.config.options.launch_cluster:
                 cluster.connect()
                 # Catches AttributeError
-                try:
-                    cluster.launch()
-                except AttributeError as e:
-                    print "Caught AttributeError Exception"
+                # try:
+                cluster.launch()
+                #except AttributeError as e:
+                #    print "Caught AttributeError Exception"
                 
             if self.config.options.terminate_cluster:
                 cluster.connect()

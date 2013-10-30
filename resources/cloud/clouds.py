@@ -37,6 +37,8 @@ class Cloud(object):
         """Connects to the cloud using boto interface"""
 
         self.region = RegionInfo(name=self.cloud_type, endpoint=self.cloud_uri)
+        print self.access_id
+        print self.secret_key
         self.conn = EC2Connection(
             self.access_id, self.secret_key,
             port=self.cloud_port, region=self.region, validate_certs=False)
@@ -76,7 +78,7 @@ class Cloud(object):
                       (self.config.globals.key_name))
 
         image_object = self.conn.get_image(self.image_id)
-        boot_result = image_object.run(key_name=self.config.globals.key_name,
+        boot_result = image_object.run(key_name=self.config.globals.key_name, 
                                        instance_type=self.instance_type)
         LOG.debug("Attempted to boot an instance. Result: %s" % (boot_result))
         return boot_result
