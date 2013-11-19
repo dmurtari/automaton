@@ -10,8 +10,8 @@ results, and generating graphs.
 Prerequisites
 -------------
 
-Automaton requires that numpy, fabirc, boto, and matplotlib libraries be installed.
-The easiest way to install these libraries is through [pip]
+Automaton requires that numpy, fabric, boto, and matplotlib libraries be installed. 
+The easiest way to install these libraries is through [pip].
 
 Numpy can be installed with the command:
 
