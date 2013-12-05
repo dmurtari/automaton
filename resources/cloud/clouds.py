@@ -3,7 +3,6 @@ import os
 
 from boto.ec2.connection import EC2Connection
 from boto.ec2.regioninfo import RegionInfo
-
 LOG = logging.getLogger(__name__)
 
 
@@ -36,9 +35,11 @@ class Cloud(object):
     def connect(self):
         """Connects to the cloud using boto interface"""
 
+        print str(self.access_id)
+        print str(self.secret_key)
         self.region = RegionInfo(name=self.cloud_type, endpoint=self.cloud_uri)
         self.conn = EC2Connection(
-            self.access_id, self.secret_key,
+            self.access_id, self.secret_key, is_secure=False, path='/services/Cloud',
             port=self.cloud_port, region=self.region, validate_certs=False)
         self.conn.host = self.cloud_uri
         LOG.debug("Connected to cloud: %s" % (self.name))
@@ -65,16 +66,21 @@ class Cloud(object):
         # Check if a key with specified name is already registered. If
         # not, register the key
         registered = False
+        print "Checking if public key is registered"
         for key in self.conn.get_all_key_pairs():
+            print "Key is: " + str(key.name)
             if key.name == self.config.globals.key_name:
+                print str(key.name) + " is registered"
                 registered = True
                 break
         if not registered:
+            print "Registering"
             self.register_key()
         else:
             LOG.debug("Key \"%s\" is already registered" %
                       (self.config.globals.key_name))
 
+        print "Successfully registered keys"
         image_object = self.conn.get_image(self.image_id)
         boot_result = image_object.run(key_name=self.config.globals.key_name,
                                        instance_type=self.instance_type)
