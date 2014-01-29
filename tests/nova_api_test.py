@@ -5,15 +5,18 @@ from credentials import get_nova_creds
 
 creds = get_nova_creds()
 nova = nvclient.Client(**creds)
-"""
+
+print "Checking for keypair and importing if not found"
 if not nova.keypairs.findall(name="mykey"):
     with open(os.path.expanduser('~/.ssh/id_rsa.pub')) as fpubkey:
-        """
-with open(os.path.expanduser('~/.ssh/id_rsa.pub')) as fpubkey:
-    nova.keypairs.create(name="mykey", public_key=fpubkey.read())
-#image = nova.images.find(name="cirros")
-#flavor = nova.flavors.find(name="m1.tiny")
-#instance = nova.servers.create(name="test", image=image, flavor=flavor, key_name="mykey")
+        nova.keypairs.create(name="mykey", public_key=fpubkey.read())
+
+
+image = nova.images.find(name="futuregrid/ubuntu-12.04")
+flavor = nova.flavors.find(name="m1.tiny")
+
+print "Creating instance of " + str(image) + " of flavor " + str(flavor)
+instance = nova.servers.create(name="test", image=image, flavor=flavor, key_name="mykey")
 
 # Poll at 5 second intervals, until the status is no longer 'BUILD'
 status = instance.status
@@ -23,3 +26,4 @@ while status == 'BUILD':
     instance = nova.servers.get(instance.id)
     status = instance.status
 print "status: %s" % status
+

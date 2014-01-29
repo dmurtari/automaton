@@ -1,8 +1,8 @@
 Notes:
 
-For keystone_api_test:
-  Needed to disable certificate validation
-    :param boolean insecure: Does not perform X.509 certificate validation
-                             when establishing SSL connection with identity
-                             service. default: False (optional)
+Needed to disable certificate validation
+  :param boolean insecure: Does not perform X.509 certificate validation
+                           when establishing SSL connection with identity
+                           service. default: False (optional)
 
+Create class with functionality to create and delete instances.
