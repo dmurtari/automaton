@@ -22,5 +22,5 @@ export OS_USERNAME=dmurtari
 export OS_PASSWORD=Vj6bLlL9WlVx
 
 export SERVICE_ENDPOINT=https://s77r.idp.sdsc.futuregrid.org:5000/v2.0
-export SERVICE_TOKEN=ADMIN
-export CN=https://s77r.idp.sdsc.futuregrid.org
+#export SERVICE_TOKEN=ADMIN
+#export CN=https://s77r.idp.sdsc.futuregrid.org

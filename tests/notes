@@ -1,6 +1,6 @@
 Notes:
 
-Needed to disable certificate validation
+Needed to disable certificate validation (in credentials.py)
   :param boolean insecure: Does not perform X.509 certificate validation
                            when establishing SSL connection with identity
                            service. default: False (optional)

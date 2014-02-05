@@ -4,7 +4,7 @@ import novaclient.exceptions as exception
 import novaclient.v1_1.client as nvclient
 from credentials import get_nova_creds
 
-class NovaClient(object):
+class NovaAPITest(object):
 
     def __init__(self):
         self.creds = get_nova_creds()
@@ -41,9 +41,9 @@ class NovaClient(object):
             print "Instance of name " + name + " not found"
 
 def main():
-    conn = NovaClient()
-    #conn.create("test")
-    conn.destroy("test")
+    conn = NovaAPITest()
+    conn.create("test")
+    #conn.destroy("test")
 
 if __name__ == "__main__":
     main()
