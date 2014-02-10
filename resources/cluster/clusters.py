@@ -26,6 +26,9 @@ class Cluster(object):
     exactly match section names in the cloud file (both references and
     section names are case-sensitive).
 
+    Now trying to implement openstack (grizzly) connectivity through
+    the python Nova Client API. 
+
     """
     def __init__(self, config, avail_clouds, benchmark, cluster_name,
                  database):
