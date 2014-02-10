@@ -44,7 +44,7 @@ class Cloud(object):
         print str(self.secret_key)
         self.region = RegionInfo(name=self.cloud_type, endpoint=self.cloud_uri)
         self.conn = EC2Connection(
-            self.access_id, self.secret_key, is_secure=False, path='/services/Cloud',
+            self.access_id, self.secret_key,
             port=self.cloud_port, region=self.region, validate_certs=False)
         self.conn.host = self.cloud_uri
         LOG.debug("Connected to cloud: %s" % (self.name))
