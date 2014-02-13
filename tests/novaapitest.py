@@ -31,7 +31,12 @@ class NovaAPITest(object):
             instance = self.nova.servers.get(instance.id)
             status = instance.status
         print "status: %s" % status
-
+        print self.nova.floating_ips.create()
+        floating_ip = self.nova.floating_ips.create()
+        print floating_ip
+        instance = self.nova.servers.find(name="test")
+        instance.add_floating_ip(floating_ip)
+        
     def destroy(self, name):
         print "Deleting instance " + name
         try:
@@ -43,7 +48,7 @@ class NovaAPITest(object):
 def main():
     conn = NovaAPITest()
     conn.create("test")
-    #conn.destroy("test")
+    # conn.destroy("test")
 
 if __name__ == "__main__":
     main()
