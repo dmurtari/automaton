@@ -124,6 +124,7 @@ class NovaCloud(object):
             # Retrieve the instance again so the status field updates
             instance = self.nova.servers.get(instance.id)
             status = instance.status
+            
         print "status: %s" % status
 
     def destroy(self, name):
