@@ -34,9 +34,9 @@ class Cloud(object):
         self.secret_var = sk.strip('$')
         self.access_id = os.environ[self.access_var]
         self.secret_key = os.environ[self.secret_var]
-        if self.cloud_type is "nimbus":
+        if self.cloud_type == "nimbus":
             self.cloud_port = int(self.cloud_config.get(self.name, "cloud_port"))
-        elif self.cloud_type is "openstack":
+        elif self.cloud_type == "openstack":
             self.project_id = self.cloud_config.get(self.name, "project_id")
         self.conn = None
 
@@ -44,13 +44,13 @@ class Cloud(object):
         """Connects to the cloud using boto interface"""
         
         print "Connecting to cloud of type: " + str(self.cloud_type)
-        if self.cloud_type is "nimbus":
+        if self.cloud_type == "nimbus":
             self.region = RegionInfo(name=self.cloud_type, endpoint=self.cloud_uri)
             self.conn = EC2Connection(
                 self.access_id, self.secret_key,
                 port=self.cloud_port, region=self.region, validate_certs=False)
             self.conn.host = self.cloud_uri
-        elif self.cloud_type is "openstack":
+        elif self.cloud_type == "openstack":
             self.creds = get_nova_creds()
             self.conn = nvclient.Client(**self.creds)
         LOG.debug("Connected to cloud: %s" % (self.name))
@@ -63,8 +63,13 @@ class Cloud(object):
 
         with open(self.config.globals.key_path, 'r') as key_file_object:
             key_content = key_file_object.read().strip()
-        import_result = self.conn.import_key_pair(self.config.globals.key_name,
+        if self.cloud_type == "nimbus":
+            import_result = self.conn.import_key_pair(self.config.globals.key_name,
                                                   key_content)
+        elif self.cloud_type == "openstack":
+            print "registering openstack key"
+            import_result = self.conn.keypairs.create(name=self.config.globals.key_name, 
+                                        public_key=key_content)
         LOG.debug("Registered key \"%s\"" % (self.config.globals.key_name))
         return import_result
 
@@ -78,12 +83,19 @@ class Cloud(object):
         # not, register the key
         registered = False
         print "Checking if public key is registered"
-        for key in self.conn.get_all_key_pairs():
-            print "Key is: " + str(key.name)
-            if key.name == self.config.globals.key_name:
-                print str(key.name) + " is registered"
-                registered = True
-                break
+        if self.cloud_type == "nimbus":
+            print "checking nimbus key"
+            for key in self.conn.get_all_key_pairs():
+                print "Key is: " + str(key.name)
+                if key.name == self.config.globals.key_name:
+                    print str(key.name) + " is registered"
+                    registered = True
+                    break
+        elif self.cloud_type == "openstack":
+            print "checking openstack key"
+            if not self.conn.keypairs.findall(name=self.config.globals.key_name):
+                print "openstack key is not registered"
+                registered = False
         if not registered:
             print "Registering"
             self.register_key()
