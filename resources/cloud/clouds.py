@@ -24,8 +24,6 @@ class Cloud(object):
         self.config = config
         self.name = cloud_name
         self.cloud_config = self.config.clouds.config
-        self.cloud_uri = self.cloud_config.get(self.name, "cloud_uri")
-        self.cloud_port = int(self.cloud_config.get(self.name, "cloud_port"))
         self.cloud_type = self.cloud_config.get(self.name, "cloud_type")
         self.image_id = self.cloud_config.get(self.name, "image_id")
         self.instance_type = self.cloud_config.get(self.name, "instance_type")
@@ -35,6 +33,8 @@ class Cloud(object):
         self.secret_var = sk.strip('$')
         self.access_id = os.environ[self.access_var]
         self.secret_key = os.environ[self.secret_var]
+        if self.cloud_type is "nimbus":
+            self.cloud_config.get(self.name, "cloud_uri")
         self.conn = None
 
     def connect(self):
