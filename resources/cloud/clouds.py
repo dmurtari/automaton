@@ -24,6 +24,7 @@ class Cloud(object):
         self.config = config
         self.name = cloud_name
         self.cloud_config = self.config.clouds.config
+        self.cloud_uri = self.cloud_config.get(self.name, "cloud_uri")
         self.cloud_type = self.cloud_config.get(self.name, "cloud_type")
         self.image_id = self.cloud_config.get(self.name, "image_id")
         self.instance_type = self.cloud_config.get(self.name, "instance_type")
@@ -34,19 +35,24 @@ class Cloud(object):
         self.access_id = os.environ[self.access_var]
         self.secret_key = os.environ[self.secret_var]
         if self.cloud_type is "nimbus":
-            self.cloud_config.get(self.name, "cloud_uri")
+            self.cloud_port = int(self.cloud_config.get(self.name, "cloud_port"))
+        elif self.cloud_type is "openstack":
+            self.project_id = self.cloud_config.get(self.name, "project_id")
         self.conn = None
 
     def connect(self):
         """Connects to the cloud using boto interface"""
-
-        print str(self.access_id)
-        print str(self.secret_key)
-        self.region = RegionInfo(name=self.cloud_type, endpoint=self.cloud_uri)
-        self.conn = EC2Connection(
-            self.access_id, self.secret_key,
-            port=self.cloud_port, region=self.region, validate_certs=False)
-        self.conn.host = self.cloud_uri
+        
+        print "Connecting to cloud of type: " + str(self.cloud_type)
+        if self.cloud_type is "nimbus":
+            self.region = RegionInfo(name=self.cloud_type, endpoint=self.cloud_uri)
+            self.conn = EC2Connection(
+                self.access_id, self.secret_key,
+                port=self.cloud_port, region=self.region, validate_certs=False)
+            self.conn.host = self.cloud_uri
+        elif self.cloud_type is "openstack":
+            self.creds = get_nova_creds()
+            self.conn = nvclient.Client(**self.creds)
         LOG.debug("Connected to cloud: %s" % (self.name))
 
     def register_key(self):

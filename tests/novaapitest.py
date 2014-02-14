@@ -8,6 +8,7 @@ class NovaAPITest(object):
 
     def __init__(self):
         self.creds = get_nova_creds()
+        print self.creds
         self.nova = nvclient.Client(**self.creds)
 
         print "Checking for keypair and importing if not found"
