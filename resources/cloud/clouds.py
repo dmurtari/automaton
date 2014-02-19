@@ -26,8 +26,6 @@ class Cloud(object):
         self.cloud_config = self.config.clouds.config
         self.cloud_uri = self.cloud_config.get(self.name, "cloud_uri")
         self.cloud_type = self.cloud_config.get(self.name, "cloud_type")
-        self.image_id = self.cloud_config.get(self.name, "image_id")
-        self.instance_type = self.cloud_config.get(self.name, "instance_type")
         aid = self.cloud_config.get(self.name, "access_id")
         self.access_var = aid.strip('$')
         sk = self.cloud_config.get(self.name, "secret_key")
@@ -36,6 +34,8 @@ class Cloud(object):
         self.secret_key = os.environ[self.secret_var]
         if self.cloud_type == "nimbus":
             self.cloud_port = int(self.cloud_config.get(self.name, "cloud_port"))
+            self.image_id = self.cloud_config.get(self.name, "image_id")
+            self.instance_type = self.cloud_config.get(self.name, "instance_type")
         elif self.cloud_type == "openstack":
             self.project_id = self.cloud_config.get(self.name, "project_id")
         self.conn = None
@@ -53,6 +53,8 @@ class Cloud(object):
         elif self.cloud_type == "openstack":
             self.creds = get_nova_creds()
             self.conn = nvclient.Client(**self.creds)
+            self.image_id = self.conn.images.find(name=self.cloud_config.get(self.name, "image_id"))
+            self.instance_type = self.conn.flavors.find(name=self.cloud_config.get(self.name, "instance_type"))
         LOG.debug("Connected to cloud: %s" % (self.name))
 
     def register_key(self):
@@ -81,15 +83,15 @@ class Cloud(object):
 
         # Check if a key with specified name is already registered. If
         # not, register the key
-        registered = False
+        registered = True
         print "Checking if public key is registered"
         if self.cloud_type == "nimbus":
             print "checking nimbus key"
             for key in self.conn.get_all_key_pairs():
                 print "Key is: " + str(key.name)
-                if key.name == self.config.globals.key_name:
-                    print str(key.name) + " is registered"
-                    registered = True
+                if not key.name == self.config.globals.key_name:
+                    print str(key.name) + " is not registered"
+                    registered = False
                     break
         elif self.cloud_type == "openstack":
             print "checking openstack key"
@@ -104,56 +106,22 @@ class Cloud(object):
                       (self.config.globals.key_name))
 
         print "Successfully registered keys"
-        image_object = self.conn.get_image(self.image_id)
-        boot_result = image_object.run(key_name=self.config.globals.key_name,
-                                       instance_type=self.instance_type)
+        print "Creating instance of " + str(self.image_id) + " of flavor " + str(self.instance_type) + \
+              " using key " + str(self.config.globals.key_name)
+        
+        
+        if self.cloud_type == "nimbus":
+            image_object = self.conn.get_image(self.image_id)
+            boot_result = image_object.run(key_name=self.config.globals.key_name,
+                                           instance_type=self.instance_type)
+        elif self.cloud_type == "openstack":
+            instance = self.conn.servers.create(name="test", 
+                                                image=self.image_id, 
+                                                flavor=self.instance_type, 
+                                                key_name=self.config.globals.key_name) 
+            boot_result = instance.status                                       
         LOG.debug("Attempted to boot an instance. Result: %s" % (boot_result))
         return boot_result
-
-class NovaCloud(object):
-
-    """
-    Should provide functionality to connect to OpenStack clouds using the 
-    Nova API.
-    """
-
-    def __init__(self):
-        self.creds = get_nova_creds()
-        self.nova = nvclient.Client(**self.creds)
-
-        print "Checking for keypair and importing if not found"
-        if not self.nova.keypairs.findall(name="mykey"):
-            with open(os.path.expanduser('~/.ssh/id_rsa.pub')) as fpubkey:
-                self.nova.keypairs.create(name="mykey", public_key=fpubkey.read())
-
-
-        self.image = self.nova.images.find(name="futuregrid/ubuntu-12.04")
-        self.flavor = self.nova.flavors.find(name="m1.tiny")
-
-    def boot_image(self, name):
-        print "Creating instance of " + str(self.image) + " of flavor " + str(self.flavor)
-        instance = self.nova.servers.create(name=name, image=self.image, 
-                                            flavor=self.flavor, key_name="mykey")
-
-        # Poll at 5 second intervals, until the status is no longer 'BUILD'
-        status = instance.status
-        while status == 'BUILD':
-            time.sleep(5)
-            # Retrieve the instance again so the status field updates
-            instance = self.nova.servers.get(instance.id)
-            status = instance.status
-            
-        print "status: %s" % status
-
-    def destroy(self, name):
-        print "Deleting instance " + name
-        try:
-            server = self.nova.servers.find(name=name)
-            server.delete()
-        except exception.NotFound:
-            print "Instance of name " + name + " not found"
-
-
 
 class Clouds(object):
     """Clusters class represents a collection of clouds specified in the
