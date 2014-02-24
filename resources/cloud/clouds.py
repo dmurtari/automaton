@@ -165,10 +165,14 @@ class Cloud(object):
                                             image=self.image_id, 
                                             flavor=self.instance_type, 
                                             key_name=self.config.globals.key_name) 
-        boot_result = image_object.status                                       
+        boot_result = Reservation(self.conn)                                      
         LOG.debug("Attempted to boot an instance. Result: %s" % (boot_result))
         return boot_result
 
+class Reservation(object):
+    def __init__(self, connection=None):
+        self.conn = connection
+        self.instances = self.conn.servers.list() 
 
 class Clouds(object):
     """Clusters class represents a collection of clouds specified in the
