@@ -12,8 +12,8 @@ LOG = logging.getLogger(__name__)
 
 
 class NimbusCloud(object):
-    """Cloud class provides functionality for connecting to a specified
-    cloud and launching an instance there
+    """NimbusCloud class provides functionality for connecting to a specified
+    Nimbus cloud and launching an instance there
 
     cloud_name should match one of the section names in the file that
     specifies cloud information
@@ -95,7 +95,16 @@ class NimbusCloud(object):
         LOG.debug("Attempted to boot an instance. Result: %s" % (boot_result))
         return boot_result
 
+
 class Cloud(object):
+    """Cloud class provides functionality for connecting to a specified
+    OpenStack cloud and launching an instance there using the python-novaclient
+    API
+
+    cloud_name should match one of the section names in the file that
+    specifies cloud information
+
+    """
 
     def __init__(self, cloud_name, config):
         self.config = config
@@ -170,9 +179,16 @@ class Cloud(object):
         return boot_result
 
 class Reservation(object):
+    """Reservation class duplicates some of the functionality of the
+    Reservation object present in boto. Should allow code written for boto
+    to work with the python-novaclient API
+
+    """
+
     def __init__(self, connection=None):
         self.conn = connection
         self.instances = self.conn.servers.list() 
+
 
 class Clouds(object):
     """Clusters class represents a collection of clouds specified in the
