@@ -8,7 +8,6 @@ class NovaAPITest(object):
 
     def __init__(self):
         self.creds = get_nova_creds()
-        print self.creds
         self.nova = nvclient.Client(**self.creds)
 
         print "Checking for keypair and importing if not found"
@@ -32,11 +31,6 @@ class NovaAPITest(object):
             instance = self.nova.servers.get(instance.id)
             status = instance.status
         print "status: %s" % status
-        print self.nova.floating_ips.create()
-        floating_ip = self.nova.floating_ips.create()
-        print floating_ip
-        instance = self.nova.servers.find(name="test")
-        instance.add_floating_ip(floating_ip)
         
     def destroy(self, name):
         print "Deleting instance " + name

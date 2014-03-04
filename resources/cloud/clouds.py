@@ -86,7 +86,8 @@ class NimbusCloud(object):
                       (self.config.globals.key_name))
 
         print "Successfully registered keys"
-        print "Creating instance of " + str(self.image_id) + " of flavor " + str(self.instance_type) + \
+        print "Creating instance of " + str(self.image_id) + " of flavor " + \
+              str(self.instance_type) + \
               " using key " + str(self.config.globals.key_name)
         
         image_object = self.conn.get_image(self.image_id)
@@ -94,6 +95,9 @@ class NimbusCloud(object):
                                        instance_type=self.instance_type)
         LOG.debug("Attempted to boot an instance. Result: %s" % (boot_result))
         return boot_result
+
+    def get_all_instances():
+        return self.conn.get_all_instances()
 
 
 class Cloud(object):
@@ -140,7 +144,8 @@ class Cloud(object):
         with open(self.config.globals.key_path, 'r') as key_file_object:
             key_content = key_file_object.read().strip()
         print "registering openstack key"
-        import_result = self.conn.keypairs.create(name=self.config.globals.key_name, 
+        import_result = self.conn.keypairs.create(
+                                    name=self.config.globals.key_name, 
                                     public_key=key_content)
         LOG.debug("Registered key \"%s\"" % (self.config.globals.key_name))
         return import_result
@@ -167,16 +172,27 @@ class Cloud(object):
                       (self.config.globals.key_name))
 
         print "Successfully registered keys"
-        print "Creating instance of " + str(self.image_id) + " of flavor " + str(self.instance_type) + \
+        print "Creating instance of " + str(self.image_id) + " of flavor " + \
+              str(self.instance_type) + \
               " using key " + str(self.config.globals.key_name)
 
         image_object = self.conn.servers.create(name="test", 
-                                            image=self.image_id, 
-                                            flavor=self.instance_type, 
-                                            key_name=self.config.globals.key_name) 
+                                        image=self.image_id, 
+                                        flavor=self.instance_type, 
+                                        key_name=self.config.globals.key_name) 
+        # floating_ip = self.conn.floating_ips.create()
+        # image_object.add_floating_ip(floating_ip)
         boot_result = Reservation(self.conn)                                      
         LOG.debug("Attempted to boot an instance. Result: %s" % (boot_result))
         return boot_result
+
+    def get_all_instances(self):
+        return self.conn.servers.list()
+
+    def terminate_all(self):
+        instances = self.get_all_instances()
+        for instance in instances:
+            instance.delete()
 
 class Reservation(object):
     """Reservation class duplicates some of the functionality of the
