@@ -159,29 +159,27 @@ class Cloud(object):
         # Check if a key with specified name is already registered. If
         # not, register the key
         registered = True
-        print "Checking if public key is registered"
-        print "checking openstack key"
         if not self.conn.keypairs.findall(name=self.config.globals.key_name):
-            print "openstack key is not registered"
             registered = False
         if not registered:
-            print "Registering"
             self.register_key()
         else:
             LOG.debug("Key \"%s\" is already registered" %
                       (self.config.globals.key_name))
 
-        print "Successfully registered keys"
-        print "Creating instance of " + str(self.image_id) + " of flavor " + \
-              str(self.instance_type) + \
-              " using key " + str(self.config.globals.key_name)
-
         image_object = self.conn.servers.create(name="test", 
                                         image=self.image_id, 
                                         flavor=self.instance_type, 
                                         key_name=self.config.globals.key_name) 
-        # floating_ip = self.conn.floating_ips.create()
-        # image_object.add_floating_ip(floating_ip)
+        status = image_object.status
+        while status == 'BUILD':
+            time.sleep(5)
+            # Retrieve the instance again so the status field updates
+            image_object = self.conn.servers.get(image_object.id)
+            status = image_object.status
+
+        floating_ip = self.conn.floating_ips.create()
+        image_object.add_floating_ip(floating_ip)
         boot_result = Reservation(self.conn)                                      
         LOG.debug("Attempted to boot an instance. Result: %s" % (boot_result))
         return boot_result
