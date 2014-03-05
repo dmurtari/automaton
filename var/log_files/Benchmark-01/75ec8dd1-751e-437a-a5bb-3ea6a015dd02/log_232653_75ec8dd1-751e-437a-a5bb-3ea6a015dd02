@@ -1,0 +1,111 @@
+Please specify your architecture
+[A] Alpha
+[P] PowerPC
+[X] x86
+[H] Custom. (If you have already ran the install-codes.sh successfully
+to completion, you can choose this option to run the binaries installed
+on your system)
+How would you like to run BioPerf
+[C] You want to choose codes you would like to run
+[A] Running all codes.
+Please give your input size
+[A] class-A
+[B] class-B
+[C] class-C
+[X] Run all
+
+
+Fasta requires nr database for running
+Download and install nr from ftp://ftp.ncbi.nih.gov/blast/db/nr.tar.gz
+Then set the DATABASES environment variable to the directory containing nr
+
+
+Would you like to run BioPerf without running Fasta [y/n]
+*********************************
+Running Blast
+*********************************
+The output is stored as x86-blastn-output in /home/ubuntu/BioPerf/Outputs/Blast directory.
+The output has been stored as x86-classA-blastp.script in the director /home/ubuntu/BioPerf/Outputs/blastp
+*********************************
+Running Ce
+*********************************
+Making output directory /home/ubuntu/BioPerf/Outputs/Ce/ce.output
+The output has been stored as ce.output in /home/ubuntu/BioPerf/Outputs/Ce
+*********************************
+Running Clustalw
+*********************************
+The output has been stored as 1a2J_1hjbA.dnd and 1a2J_1hjbA.aln has been stored in /home/ubuntu/BioPerf/Outputs/Clustalw
+Set the number of threads by environment variable THREADS
+Running with default = 1 thread
+The output has been stored as 1a02J_1hjbA.aln and 1a02J_1hjbA.dnd in /home/ubuntu/BioPerf/Outputs/Clustalw
+*********************************
+Running Glimmer
+*********************************
+The output has been stored as glimmer-classA.output in /home/ubuntu/BioPerf/Outputs/Glimmer
+run Glimmer2
+[H[JGenome is NC_004061.fna
+Find non-overlapping orfs in  tmp.coord
+Extract training sequences to  tmp.train
+0 0 0 tmp.train
+Build interpolated context model in  tmp.model
+Predict genes with Glimmer2 with coordinates in  g2.coord
+The output has been stored as glimmer-package-classA.output in /home/ubuntu/BioPerf/Outputs/Glimmer
+*********************************
+Running Grappa
+*********************************
+The output has been stored as camp09_full in /home/vipin/final-BioPerf/Outputs/Grappa
+*********************************
+Running Hmmer
+*********************************
+The output has been stored as classA-hmmpfam-output in /home/ubuntu/BioPerf/Outputs/Hmmer
+The output has been stored as hmmpsearch-output in /home/ubuntu/BioPerf/Outputs/Hmmer
+*********************************
+Running Phylip
+*********************************
+Deleting previous infile in the Binary directory
+The output has been stored as dnapenny-outfile and dnapenny-outtree in /home/ubuntu/BioPerf/Outputs/Phylip
+Deleting previous infile in the Binary directory
+The output has been stored as classA-promlk-outfile and classA-promlk-outtree in /home/ubuntu/BioPerf/Outputs/Phylip
+*********************************
+Running Predator
+*********************************
+The output has been stored as classA-predator in /home/ubuntu/BioPerf/Outputs/Predator
+*********************************
+Running Tcoffee
+*********************************
+The output has been stored as *.aln and *.dnd in /home/ubuntu/BioPerf/Outputs/Tcoffee
+The time taken for running blastn for -small size input is 0
+The time taken for running blastp for -small size input is 0
+
+
+The time taken for running Ce for -small size input is 0
+
+
+The time taken for running clustalw for -small size input is 0
+The time taken for running clustalw-smp for -small size input is 0
+
+
+The time taken for running glimmer for -small size input is 0
+The time taken for running glimmer-package for -small size input is 0
+
+
+The time taken for running Grappa for -small size input is 0
+
+
+The time taken for running hmmpfam for -small size input is 0
+The time taken for running hmmsearch for -small size input is 0
+
+
+The time taken for running dnapenny for -small size input is 0
+The time taken for running promlk for -small size input is 1
+
+
+The time taken for running Predator for -small size input is 0
+
+
+The time taken for running Tcoffee for -small size input is 0
+
+
+******************************************************
+Total time for running BioPerf is 1 seconds
+******************************************************

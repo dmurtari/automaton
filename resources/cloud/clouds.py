@@ -192,6 +192,9 @@ class Cloud(object):
     def get_all_instances(self):
         return self.conn.servers.list()
 
+    def get_all_floating_ips(self):
+        return self.conn.floating_ips.list()
+
     def terminate_all(self):
         instances = self.get_all_instances()
         iplist = self.conn.floating_ips.list()

@@ -106,7 +106,7 @@ class Cluster(object):
 
         """
 
-        reservations = list()
+        # reservations = list()
         for cloud in self.clouds:
             for instance in cloud.get_all_instances():
                 self.database.terminate(instance.id)
@@ -129,18 +129,15 @@ class Cluster(object):
     def download_logs(self):
         reservations = list()
         ssh_username = self.config.globals.ssh_username
-        if self.reservations:
-            reservations = self.reservations
-        else:
-            for cloud in self.clouds:
-                reservations = cloud.conn.get_all_instances()
-        for reservation in reservations:
-            for instance in reservation.instances:
+        for cloud in self.clouds:
+            for instance in cloud.get_all_floating_ips():
+                print "Instance is " + str(instance)
+                print "ID is " + str(instance.instance_id)
                 if self.database.check_benchmark(self.benchmark.name,
-                                                 instance.id):
+                                                 instance.instance_id):
                     local_path = os.path.join(
                         self.config.globals.log_local_path,
-                        self.benchmark.name, instance.id)
+                        self.benchmark.name, instance.instance_id)
                     if not os.path.exists(local_path):
                         os.makedirs(local_path)
                     for path in self.path:
@@ -148,9 +145,9 @@ class Cluster(object):
                         local_path = os.path.join(local_path, file_name)
                         now = (datetime.datetime.now()).strftime("%H%M%S")
                         local_path = local_path + '_' + now + '_' + \
-                                     instance.instance_type
+                                     instance.instance_id
                         com = "scp -r " + ssh_username + "@" + \
-                              instance.public_dns_name + ":" + path + " " + \
+                              instance.ip + ":" + path + " " + \
                               local_path
                         LOG.debug("Download logs: [%s] download %s into %s" %
                                   (self.benchmark.name, os.path.basename(path),
@@ -167,50 +164,46 @@ class Cluster(object):
         ssh_timeout = int(self.config.globals.ssh_timeout)
         reservations = list()
         not_available = 0
-        if self.reservations:
-            reservations = self.reservations
-        else:
-            for cloud in self.clouds:
-                reservations = cloud.get_all_instances()
-        for instance in reservations:
-            if self.database.check_benchmark(self.benchmark.name,
-                                             instance.id):
-                print "In database, checking port status"
-                if not check_port_status(instance.floating_ip, 22,
-                                         ssh_timeout):
-                    LOG.error("Deploy_software: the port 22 is not "
-                              "available right now. please try it later")
-                    continue
-                cmds = list()
-                cmds.append("wget %s" % (self.url))
-                #cmds.append("apt-get update")
-                #cmds.append("apt-get install unzip")
-                cmds.append("unzip BioPerf.zip")
-                cmds.append("sed -i 's/read BIOPERF/#read "
-                            "BIOPERF/g' install-BioPerf.sh")
-                cmds.append("./install-BioPerf.sh")
-                for c in cmds:
-                    command = RemoteCommand(instance.public_dns_name,
-                                            ssh_priv_key, c)
-                    command_return = command.execute()
-                    if command_return != 0:
-                        LOG.error("Deploy_software: " + command.stdout)
-                        LOG.error("Deploy_software error: " +
-                                  command.stderr)
+        for cloud in self.clouds:
+            for instance in cloud.get_all_floating_ips():
+                print "Instance is " + str(instance)
+                print "ID is " + str(instance.instance_id)
+                if self.database.check_benchmark(self.benchmark.name,
+                                                 instance.instance_id):
+                    print "In database, checking port status"
+                    print "Checking ip " + str(instance.ip)
+                    if not check_port_status(instance.ip, 22, ssh_timeout):
+                        LOG.error("Deploy_software: the port 22 is not "
+                                  "available right now. please try it later")
+                        continue
+                    cmds = list()
+                    cmds.append("wget %s" % (self.url))
+                    cmds.append("sudo apt-get update")
+                    cmds.append("sudo apt-get install unzip")
+                    cmds.append("unzip BioPerf.zip")
+                    cmds.append("sed -i 's/read BIOPERF/#read "
+                                "BIOPERF/g' install-BioPerf.sh")
+                    cmds.append("./install-BioPerf.sh")
+                    for c in cmds:
+                        print "Deploying commands " + str(c)
+                        command = RemoteCommand(instance.ip,
+                                                ssh_priv_key, c)
+                        command_return = command.execute()
+                        if command_return != 0:
+                            LOG.error("Deploy_software: " + command.stdout)
+                            LOG.error("Deploy_software error: " +
+                                      command.stderr)
 
     def execute_benchmarks(self):
         ssh_priv_key = self.config.globals.ssh_priv_key
         ssh_username = self.config.globals.ssh_username
         reservations = list()
-        if self.reservations:
-            reservations = self.reservations
-        else:
-            for cloud in self.clouds:
-                reservations = cloud.conn.get_all_instances()
-        for reservation in reservations:
-            for instance in reservation.instances:
+        for cloud in self.clouds:
+            for instance in cloud.get_all_floating_ips():
+                print "Instance is " + str(instance)
+                print "ID is " + str(instance.instance_id)
                 if self.database.check_benchmark(self.benchmark.name,
-                                                 instance.id):
+                                                 instance.instance_id):
                     cmds = list()
                     cmds.append("sed -i '5c input='y'' ~/BioPerf/Scripts/"
                                 "Run-scripts/CleanOutputs.sh")
@@ -236,7 +229,7 @@ class Cluster(object):
                                 " > ~/BioPerf/Outputs/log")
 
                     for c in cmds:
-                        command = RemoteCommand(instance.public_dns_name,
+                        command = RemoteCommand(instance.ip,
                                                 ssh_priv_key, c)
                         command_return = command.execute()
                         if command_return != 0:

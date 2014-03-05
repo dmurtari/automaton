@@ -48,7 +48,7 @@ class NovaAPITest(object):
 
 def main():
     conn = NovaAPITest()
-    # conn.create("test")
+    conn.create("test")
     conn.iplist()
     # conn.destroy("test")
 
