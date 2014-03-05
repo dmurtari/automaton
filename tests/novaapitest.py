@@ -16,7 +16,7 @@ class NovaAPITest(object):
                 self.nova.keypairs.create(name="mykey", public_key=fpubkey.read())
 
 
-        self.image = self.nova.images.find(name="futuregrid/ubuntu-12.04")
+        self.image = self.nova.images.find(name="futuregrid/ubuntu-12.04-03-Mar-2014")
         self.flavor = self.nova.flavors.find(name="m1.tiny")
 
     def create(self, name):
@@ -30,6 +30,8 @@ class NovaAPITest(object):
             # Retrieve the instance again so the status field updates
             instance = self.nova.servers.get(instance.id)
             status = instance.status
+        floating_ip = self.nova.floating_ips.create()
+        instance.add_floating_ip(floating_ip)
         print "status: %s" % status
         
     def destroy(self, name):
@@ -40,9 +42,14 @@ class NovaAPITest(object):
         except exception.NotFound:
             print "Instance of name " + name + " not found"
 
+    def iplist(self):
+        for instance in self.nova.floating_ips.list():
+            print str(instance.instance_id) + " has floating ip " + str(instance.ip)
+
 def main():
     conn = NovaAPITest()
-    conn.create("test")
+    # conn.create("test")
+    conn.iplist()
     # conn.destroy("test")
 
 if __name__ == "__main__":

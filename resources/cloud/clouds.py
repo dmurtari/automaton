@@ -99,6 +99,11 @@ class NimbusCloud(object):
     def get_all_instances():
         return self.conn.get_all_instances()
 
+    def terminate_all(self):
+        instances = self.get_all_instances()
+        for instance in instances:
+            instance.terminate()
+
 
 class Cloud(object):
     """Cloud class provides functionality for connecting to a specified
@@ -189,8 +194,11 @@ class Cloud(object):
 
     def terminate_all(self):
         instances = self.get_all_instances()
+        iplist = self.conn.floating_ips.list()
         for instance in instances:
             instance.delete()
+        for ip in iplist:
+            self.conn.floating_ips.delete(ip)
 
 class Reservation(object):
     """Reservation class duplicates some of the functionality of the

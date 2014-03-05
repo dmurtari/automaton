@@ -171,32 +171,32 @@ class Cluster(object):
             reservations = self.reservations
         else:
             for cloud in self.clouds:
-                reservations = cloud.conn.get_all_instances()
-        for reservation in reservations:
-            for instance in reservation.instances:
-                if self.database.check_benchmark(self.benchmark.name,
-                                                 instance.id):
-                    if not check_port_status(instance.ip_address, 22,
-                                             ssh_timeout):
-                        LOG.error("Deploy_software: the port 22 is not "
-                                  "available right now. please try it later")
-                        continue
-                    cmds = list()
-                    cmds.append("wget %s" % (self.url))
-                    #cmds.append("apt-get update")
-                    #cmds.append("apt-get install unzip")
-                    cmds.append("unzip BioPerf.zip")
-                    cmds.append("sed -i 's/read BIOPERF/#read "
-                                "BIOPERF/g' install-BioPerf.sh")
-                    cmds.append("./install-BioPerf.sh")
-                    for c in cmds:
-                        command = RemoteCommand(instance.public_dns_name,
-                                                ssh_priv_key, c)
-                        command_return = command.execute()
-                        if command_return != 0:
-                            LOG.error("Deploy_software: " + command.stdout)
-                            LOG.error("Deploy_software error: " +
-                                      command.stderr)
+                reservations = cloud.get_all_instances()
+        for instance in reservations:
+            if self.database.check_benchmark(self.benchmark.name,
+                                             instance.id):
+                print "In database, checking port status"
+                if not check_port_status(instance.floating_ip, 22,
+                                         ssh_timeout):
+                    LOG.error("Deploy_software: the port 22 is not "
+                              "available right now. please try it later")
+                    continue
+                cmds = list()
+                cmds.append("wget %s" % (self.url))
+                #cmds.append("apt-get update")
+                #cmds.append("apt-get install unzip")
+                cmds.append("unzip BioPerf.zip")
+                cmds.append("sed -i 's/read BIOPERF/#read "
+                            "BIOPERF/g' install-BioPerf.sh")
+                cmds.append("./install-BioPerf.sh")
+                for c in cmds:
+                    command = RemoteCommand(instance.public_dns_name,
+                                            ssh_priv_key, c)
+                    command_return = command.execute()
+                    if command_return != 0:
+                        LOG.error("Deploy_software: " + command.stdout)
+                        LOG.error("Deploy_software error: " +
+                                  command.stderr)
 
     def execute_benchmarks(self):
         ssh_priv_key = self.config.globals.ssh_priv_key
