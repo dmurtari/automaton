@@ -61,13 +61,18 @@ class Cluster(object):
             cloud.connect()
 
     def launch(self):
-        """Launches requested instances and populates reservation list
+        """Launches requested instances
 
         """
+        
         # for every cloud, spawn as many instances as requested
         for i in range(len(self.clouds)):
-            for j in range(self.requests[i]):
-                reservation = self.clouds[i].boot_image()
+            print "Booting " + str(self.requests[i]) + " instances"
+            self.clouds[i].boot_image(self.requests[i]) 
+
+        for cloud in self.clouds:
+            for instance in cloud.get_all_instances():
+                reservation = cloud.assign_ip(instance)
                 self.reservations.append(reservation)
                 print self.reservations
                 for instance in reservation.instances:

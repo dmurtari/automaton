@@ -131,14 +131,12 @@ class Cloud(object):
         self.conn = None
 
     def connect(self):
-        print "Connecting to cloud of type: " + str(self.cloud_type)
         self.creds = get_nova_creds()
         self.conn = nvclient.Client(**self.creds)
         self.image_id = self.conn.images.find(
                     name=self.cloud_config.get(self.name, "image_id"))
         self.instance_type = self.conn.flavors.find(
                     name=self.cloud_config.get(self.name, "instance_type"))
-        LOG.debug("Connected to cloud: %s" % (self.name))
 
     def register_key(self):
         """Registers the public key that will be used in the launched
@@ -148,18 +146,18 @@ class Cloud(object):
 
         with open(self.config.globals.key_path, 'r') as key_file_object:
             key_content = key_file_object.read().strip()
-        print "registering openstack key"
         import_result = self.conn.keypairs.create(
                                     name=self.config.globals.key_name, 
                                     public_key=key_content)
         LOG.debug("Registered key \"%s\"" % (self.config.globals.key_name))
         return import_result
 
-    def boot_image(self):
+    def boot_image(self, num):
         """Registers the public key and launches an instance of specified
         image
 
         """
+        
 
         # Check if a key with specified name is already registered. If
         # not, register the key
@@ -175,20 +173,42 @@ class Cloud(object):
         image_object = self.conn.servers.create(name="test", 
                                         image=self.image_id, 
                                         flavor=self.instance_type, 
-                                        key_name=self.config.globals.key_name) 
+                                        key_name=self.config.globals.key_name,
+                                        min_count=num, max_count=num) 
         status = image_object.status
         while status == 'BUILD':
-            time.sleep(5)
+            time.sleep(1)
             # Retrieve the instance again so the status field updates
             image_object = self.conn.servers.get(image_object.id)
             status = image_object.status
-
-        floating_ip = self.conn.floating_ips.create()
-        image_object.add_floating_ip(floating_ip)
+            
         boot_result = Reservation(self.conn)                                      
         LOG.debug("Attempted to boot an instance. Result: %s" % (boot_result))
-        return boot_result
+        return image_object
 
+    def assign_ip(self, instance):
+        # Check if a key with specified name is already registered. If
+        # not, register the key
+        registered = True
+        assigned = False
+        if not self.conn.keypairs.findall(name=self.config.globals.key_name):
+            registered = False
+        if not registered:
+            self.register_key()
+        else:
+            LOG.debug("Key \"%s\" is already registered" %
+                      (self.config.globals.key_name))
+                      
+        for assigned_instance in self.get_all_floating_ips():
+            if instance.id == assigned_instance.instance_id:
+                assigned = True
+        
+        if assigned == False:
+            floating_ip = self.conn.floating_ips.create()
+            instance.add_floating_ip(floating_ip)
+        
+        return Reservation(self.conn)
+    
     def get_all_instances(self):
         return self.conn.servers.list()
 
