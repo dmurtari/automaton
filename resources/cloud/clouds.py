@@ -39,8 +39,7 @@ class NimbusCloud(object):
 
     def connect(self):
         """Connects to the cloud using boto interface"""
-        
-        print "Connecting to cloud of type: " + str(self.cloud_type)
+
         self.region = RegionInfo(name=self.cloud_type, endpoint=self.cloud_uri)
         self.conn = EC2Connection(
             self.access_id, self.secret_key,
@@ -70,26 +69,16 @@ class NimbusCloud(object):
         # Check if a key with specified name is already registered. If
         # not, register the key
         registered = True
-        print "Checking if public key is registered"
-        print "checking nimbus key"
         for key in self.conn.get_all_key_pairs():
-            print "Key is: " + str(key.name)
             if not key.name == self.config.globals.key_name:
-                print str(key.name) + " is not registered"
                 registered = False
                 break
         if not registered:
-            print "Registering"
             self.register_key()
         else:
             LOG.debug("Key \"%s\" is already registered" %
                       (self.config.globals.key_name))
 
-        print "Successfully registered keys"
-        print "Creating instance of " + str(self.image_id) + " of flavor " + \
-              str(self.instance_type) + \
-              " using key " + str(self.config.globals.key_name)
-        
         image_object = self.conn.get_image(self.image_id)
         boot_result = image_object.run(key_name=self.config.globals.key_name,
                                        instance_type=self.instance_type)
@@ -133,10 +122,11 @@ class Cloud(object):
     def connect(self):
         self.creds = get_nova_creds()
         self.conn = nvclient.Client(**self.creds)
-        self.image_id = self.conn.images.find(
-                    name=self.cloud_config.get(self.name, "image_id"))
-        self.instance_type = self.conn.flavors.find(
-                    name=self.cloud_config.get(self.name, "instance_type"))
+        self.image_id = self.conn.images.find(name=self.cloud_config.
+                                              get(self.name, "image_id"))
+        self.instance_type = self.conn.flavors.find(name=self.cloud_config.
+                                                    get(self.name,
+                                                        "instance_type"))
 
     def register_key(self):
         """Registers the public key that will be used in the launched
@@ -146,9 +136,9 @@ class Cloud(object):
 
         with open(self.config.globals.key_path, 'r') as key_file_object:
             key_content = key_file_object.read().strip()
-        import_result = self.conn.keypairs.create(
-                                    name=self.config.globals.key_name, 
-                                    public_key=key_content)
+        import_result = self.conn.keypairs.create(name=self.config.
+                                                  globals.key_name,
+                                                  public_key=key_content)
         LOG.debug("Registered key \"%s\"" % (self.config.globals.key_name))
         return import_result
 
@@ -157,7 +147,6 @@ class Cloud(object):
         image
 
         """
-        
 
         # Check if a key with specified name is already registered. If
         # not, register the key
@@ -170,19 +159,20 @@ class Cloud(object):
             LOG.debug("Key \"%s\" is already registered" %
                       (self.config.globals.key_name))
 
-        image_object = self.conn.servers.create(name="test", 
-                                        image=self.image_id, 
-                                        flavor=self.instance_type, 
-                                        key_name=self.config.globals.key_name,
-                                        min_count=num, max_count=num) 
+        image_object = self.conn.servers.create(name="test",
+                                                image=self.image_id,
+                                                flavor=self.instance_type,
+                                                key_name=self.config.globals.
+                                                key_name,
+                                                min_count=num, max_count=num)
         status = image_object.status
         while status == 'BUILD':
             time.sleep(1)
             # Retrieve the instance again so the status field updates
             image_object = self.conn.servers.get(image_object.id)
             status = image_object.status
-            
-        boot_result = Reservation(self.conn)                                      
+
+        boot_result = Reservation(self.conn)
         LOG.debug("Attempted to boot an instance. Result: %s" % (boot_result))
         return image_object
 
@@ -198,17 +188,17 @@ class Cloud(object):
         else:
             LOG.debug("Key \"%s\" is already registered" %
                       (self.config.globals.key_name))
-                      
+
         for assigned_instance in self.get_all_floating_ips():
             if instance.id == assigned_instance.instance_id:
                 assigned = True
-        
-        if assigned == False:
+
+        if not assigned:
             floating_ip = self.conn.floating_ips.create()
             instance.add_floating_ip(floating_ip)
-        
+
         return Reservation(self.conn)
-    
+
     def get_all_instances(self):
         return self.conn.servers.list()
 
@@ -223,6 +213,7 @@ class Cloud(object):
         for ip in iplist:
             self.conn.floating_ips.delete(ip)
 
+
 class Reservation(object):
     """Reservation class duplicates some of the functionality of the
     Reservation object present in boto. Should allow code written for boto
@@ -232,7 +223,7 @@ class Reservation(object):
 
     def __init__(self, connection=None):
         self.conn = connection
-        self.instances = self.conn.servers.list() 
+        self.instances = self.conn.servers.list()
 
 
 class Clouds(object):
