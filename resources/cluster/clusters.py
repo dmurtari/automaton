@@ -10,6 +10,7 @@ from lib.util import read_path, Command, RemoteCommand, check_port_status
 
 LOG = logging.getLogger(__name__)
 
+
 class Cluster(object):
     """Cluster class represents resources used for a set of benchmarks running
     on a cloud.
@@ -64,17 +65,15 @@ class Cluster(object):
         """Launches requested instances
 
         """
-        
+
         # for every cloud, spawn as many instances as requested
         for i in range(len(self.clouds)):
-            print "Booting " + str(self.requests[i]) + " instances"
-            self.clouds[i].boot_image(self.requests[i]) 
+            self.clouds[i].boot_image(self.requests[i])
 
         for cloud in self.clouds:
             for instance in cloud.get_all_instances():
                 reservation = cloud.assign_ip(instance)
                 self.reservations.append(reservation)
-                print self.reservations
                 for instance in reservation.instances:
                     self.database.add(self.name, self.clouds[i].name,
                                       instance.id, self.benchmark.name)
@@ -136,8 +135,6 @@ class Cluster(object):
         ssh_username = self.config.globals.ssh_username
         for cloud in self.clouds:
             for instance in cloud.get_all_floating_ips():
-                print "Instance is " + str(instance)
-                print "ID is " + str(instance.instance_id)
                 if self.database.check_benchmark(self.benchmark.name,
                                                  instance.instance_id):
                     local_path = os.path.join(
@@ -150,7 +147,7 @@ class Cluster(object):
                         local_path = os.path.join(local_path, file_name)
                         now = (datetime.datetime.now()).strftime("%H%M%S")
                         local_path = local_path + '_' + now + '_' + \
-                                     instance.instance_id
+                            instance.instance_id
                         com = "scp -r " + ssh_username + "@" + \
                               instance.ip + ":" + path + " " + \
                               local_path
@@ -171,12 +168,8 @@ class Cluster(object):
         not_available = 0
         for cloud in self.clouds:
             for instance in cloud.get_all_floating_ips():
-                print "Instance is " + str(instance)
-                print "ID is " + str(instance.instance_id)
                 if self.database.check_benchmark(self.benchmark.name,
                                                  instance.instance_id):
-                    print "In database, checking port status"
-                    print "Checking ip " + str(instance.ip)
                     if not check_port_status(instance.ip, 22, ssh_timeout):
                         LOG.error("Deploy_software: the port 22 is not "
                                   "available right now. please try it later")
@@ -190,7 +183,6 @@ class Cluster(object):
                                 "BIOPERF/g' install-BioPerf.sh")
                     cmds.append("./install-BioPerf.sh")
                     for c in cmds:
-                        print "Deploying commands " + str(c)
                         command = RemoteCommand(instance.ip,
                                                 ssh_priv_key, c)
                         command_return = command.execute()
@@ -205,8 +197,6 @@ class Cluster(object):
         reservations = list()
         for cloud in self.clouds:
             for instance in cloud.get_all_floating_ips():
-                print "Instance is " + str(instance)
-                print "ID is " + str(instance.instance_id)
                 if self.database.check_benchmark(self.benchmark.name,
                                                  instance.instance_id):
                     cmds = list()
@@ -240,7 +230,6 @@ class Cluster(object):
                         if command_return != 0:
                             LOG.error("Excute_benchmarks: " + command.stdout)
                             LOG.error("Excute_benchmarks: " + command.stderr)
-
 
 
 class Clusters(object):
