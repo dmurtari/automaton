@@ -1,0 +1,10 @@
+Notes:
+
+Needed to disable certificate validation (in credentials.py)
+  :param boolean insecure: Does not perform X.509 certificate validation
+                           when establishing SSL connection with identity
+                           service. default: False (optional)
+
+Created class with functionality to create and delete instances
+  Will raise an exception if no instance of specified name can be found
+  Will raise an exception if specified name is not a unique instance
